@@ -4,27 +4,30 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
-import { User } from '../../entities/user';
+import { Link } from './../../entities/link';
 
 @ValidatorConstraint({ async: true })
-export class IsemailAlreadyExistConstraint
+export class UniqueAlias
   implements ValidatorConstraintInterface {
-  validate(email: string) {
-    return User.findOne({ where: { email } }).then((user) => {
-      if (user) return false;
+  validate(alias: string) {
+    return Link.findOne({ where: { alias } }).then((link) => {
+      if (link) return false;
       return true;
     });
   }
+  defaultMessage() {
+    return "The alias you provided for the link is already taken"
+  }
 }
 
-export function IsUserAlreadyExist(validationOptions?: ValidationOptions) {
+export function IsAliasAlreadyTaken(validationOptions?: ValidationOptions) {
   return function (object: Object, propertyName: string) {
     registerDecorator({
       target: object.constructor,
       propertyName: propertyName,
       options: validationOptions,
       constraints: [],
-      validator: IsemailAlreadyExistConstraint,
+      validator: UniqueAlias,
     });
   };
 }

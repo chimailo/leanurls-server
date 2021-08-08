@@ -4,9 +4,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Link } from './link';
 
 @ObjectType()
 @Entity('users')
@@ -16,16 +18,20 @@ export class User extends BaseEntity {
   id: string;
 
   @Field()
-  @Column({ length: 128 })
+  @Column({ length: 128, nullable: true })
   name: string;
 
   @Field()
-  @Column({ length: 150, unique: true })
+  @Column({ length: 150, unique: true, nullable: true })
   email: string;
 
   @Field()
-  @Column()
+  @Column({ nullable: true })
   avatar: string;
+
+  @Field()
+  @Column({ default: false })
+  isActive: boolean;
 
   @Field()
   @CreateDateColumn()
@@ -34,4 +40,7 @@ export class User extends BaseEntity {
   @Field()
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany(() => Link, (link) => link.user)
+  links: Link[];
 }

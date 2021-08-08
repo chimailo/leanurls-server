@@ -1,4 +1,4 @@
-import gravatar from 'gravatar'
+import gravatar from 'gravatar';
 import { IsEmail, Length, MaxLength } from 'class-validator';
 import {
   Arg,
@@ -16,7 +16,7 @@ import { MyContext } from '../types';
 import { User } from '../entities/user';
 
 @InputType()
-class RegisterInput {
+class SignupInput {
   @Field()
   @Length(2, 128)
   name: string;
@@ -33,56 +33,49 @@ class RegisterInput {
 export class UserResolver {
   @Query(() => [User], { nullable: true })
   async users(): Promise<User[]> {
-    return User.find()
+    return User.find();
   }
 
   @UseMiddleware(isAuth)
   @Query(() => User, { nullable: true })
   async me(@Ctx() { req }: MyContext): Promise<User | undefined> {
-    console.log('made request')
-    return User.findOne({ id: req.payload.user_id })
+    return User.findOne({ id: req.payload.uid });
   }
 
   @UseMiddleware(isAuth)
-  @Mutation(() => User, { nullable: true })
+  @Mutation(() => User)
   async createUser(
-    @Arg('data') data: RegisterInput,
-    @Ctx() { req }: MyContext,
-  ): Promise<User | null> {
-    const { name, email } = data;
+    @Arg('values') values: SignupInput,
+    @Ctx() { req }: MyContext
+  ): Promise<User> {
+    const { name, email } = values;
 
+    let user = await User.findOne({ id: req.payload.uid });
     const avatar = gravatar.url(email, {
       s: '200',
       r: 'pg',
       d: 'mm',
-    })
-
-    let user: User;
+    });
 
     try {
-      const query = await getConnection()
-        .createQueryBuilder()
-        .insert()
-        .into(User)
-        .values({
+      if (user) {
+        user.name = name;
+        user.email = email;
+        user.avatar = avatar;
+        user.isActive = true;
+        await user.save();
+      } else {
+        user = await User.create({
           id: req.payload.uid,
           name,
           email,
-          avatar: req.payload.picture ? req.payload.picture : avatar
-        })
-        .returning('*')
-        .execute();
-
-      user = query.raw[0];
-      // user = User.create({
-      //   id: req.payload.uid,
-      //   name,
-      //   email,
-      //   avatar: req.payload.picture ? req.payload.picture : avatar
-      // }).save();
+          avatar: req.payload.picture ? req.payload.picture : avatar,
+          isActive: true,
+        }).save();
+      }
     } catch (err) {
       console.error(err);
-      return null;
+      throw new Error('An unexpected error has ocurred, please try again.');
     }
 
     return user;
@@ -91,46 +84,43 @@ export class UserResolver {
   @UseMiddleware(isAuth)
   @Mutation(() => User, { nullable: true })
   async updateUser(
-    @Arg('id') id: String,
-    @Arg('data') data: RegisterInput,
+    @Arg('key') key: string,
+    @Arg('value') value: string,
+    @Ctx() { req }: MyContext
   ): Promise<User | null> {
-    const { name, email } = data;
-
     let user: User;
 
     try {
       const query = await getConnection()
-      .createQueryBuilder()
-      .update(User)
-      .set({ name, email })
-      .where("id = :id", { id })
-      .returning('*')
-      .execute();
+        .createQueryBuilder()
+        .update(User)
+        .set({ [key]: value })
+        .where('id = :id', { id: req.payload.uid })
+        .returning('*')
+        .execute();
 
       user = query.raw[0];
     } catch (err) {
       console.error(err);
-      return null;
+      throw new Error(err);
     }
-
     return user;
   }
 
   @UseMiddleware(isAuth)
   @Mutation(() => Boolean)
-  async deleteUser(@Arg('id') id: String): Promise<Boolean> {
+  async deleteUser(@Ctx() { req }: MyContext): Promise<Boolean> {
     try {
       await getConnection()
-      .createQueryBuilder()
-      .delete()
-      .from(User)
-      .where("id = :id", { id })
-      .execute();
+        .createQueryBuilder()
+        .delete()
+        .from(User)
+        .where('id = :id', { id: req.payload.uid })
+        .execute();
     } catch (err) {
       console.error(err);
-      throw new Error(err)
+      throw new Error(err);
     }
-
     return true;
   }
 }

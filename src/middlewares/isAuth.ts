@@ -1,5 +1,6 @@
 import path from 'path'
 import admin from 'firebase-admin';
+import { AuthenticationError } from 'apollo-server-express';
 import { MiddlewareFn } from 'type-graphql';
 import { MyContext } from '../types';
 
@@ -12,13 +13,22 @@ admin.initializeApp({
 export const isAuth: MiddlewareFn<MyContext> = async ({ context }, next) => {
   const auth_header = context.req.headers.authorization
 
-  if (!auth_header) throw new Error('No authorization header in request.')
+  if (!auth_header) throw new AuthenticationError('No authorization header in request.')
 
   const token = auth_header.split(' ')[1]
 
-  if (!token) throw new Error('No token in header.')
+  if (!token) throw new AuthenticationError('No token in header.')
+
+  let payload
+
+  try {
+    payload = await admin.auth().verifyIdToken(token)
+  } catch(error) {
+    console.log(error)
+    throw new AuthenticationError('Invalid or expired Token')
+  }
   
-  const payload = await admin.auth().verifyIdToken(token)
+  // context.req.user = await User.findOne({ id: payload.uid })
   context.req.payload = payload
   
   return next();
