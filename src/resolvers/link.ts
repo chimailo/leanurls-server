@@ -150,7 +150,7 @@ export class LinkResolver {
   @UseMiddleware(isAuth)
   @Query(() => [TableData])
   async getTableData(
-    @Arg('limit', () => Int, { defaultValue: 3 }) limit: number,
+    @Arg('limit', () => Int) limit: number,
     @Arg('offset', () => Int, { defaultValue: 0 }) offset: number,
     @Arg('filter', { nullable: true }) filter: FilterInput,
     @Ctx() { req }: MyContext
