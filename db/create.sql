@@ -1,0 +1,3 @@
+CREATE DATABASE aecio;
+CREATE DATABASE aecio_dev;
+CREATE DATABASE aecio_test;

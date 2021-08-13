@@ -1,8 +1,11 @@
-import admin from 'firebase-admin'
+import { JwtPayload } from 'jsonwebtoken';
 import { Response, Request } from 'express';
-// import { User } from './entities/user';
+
+export interface Payload extends JwtPayload {
+  user_id: string;
+}
 
 export type MyContext = {
-  req: Request & { payload: admin.auth.DecodedIdToken };
+  req: Request & { payload: Payload };
   res: Response;
 };

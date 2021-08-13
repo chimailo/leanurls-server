@@ -39,7 +39,7 @@ export class UserResolver {
   @UseMiddleware(isAuth)
   @Query(() => User, { nullable: true })
   async me(@Ctx() { req }: MyContext): Promise<User | undefined> {
-    return User.findOne({ id: req.payload.uid });
+    return User.findOne({ id: req.payload.user_id });
   }
 
   @UseMiddleware(isAuth)
@@ -50,7 +50,7 @@ export class UserResolver {
   ): Promise<User> {
     const { name, email } = values;
 
-    let user = await User.findOne({ id: req.payload.uid });
+    let user = await User.findOne({ id: req.payload.user_id });
     const avatar = gravatar.url(email, {
       s: '200',
       r: 'pg',
@@ -66,7 +66,7 @@ export class UserResolver {
         await user.save();
       } else {
         user = await User.create({
-          id: req.payload.uid,
+          id: req.payload.user_id,
           name,
           email,
           avatar: req.payload.picture ? req.payload.picture : avatar,
@@ -95,7 +95,7 @@ export class UserResolver {
         .createQueryBuilder()
         .update(User)
         .set({ [key]: value })
-        .where('id = :id', { id: req.payload.uid })
+        .where('id = :id', { id: req.payload.user_id })
         .returning('*')
         .execute();
 
@@ -115,7 +115,7 @@ export class UserResolver {
         .createQueryBuilder()
         .delete()
         .from(User)
-        .where('id = :id', { id: req.payload.uid })
+        .where('id = :id', { id: req.payload.user_id })
         .execute();
     } catch (err) {
       console.error(err);

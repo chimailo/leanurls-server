@@ -86,7 +86,7 @@ export class LinkResolver {
   @UseMiddleware(isAuth)
   @Query(() => Number)
   async getMyLinksCount(@Ctx() { req }: MyContext): Promise<number> {
-    return Link.count({ where: { user: req.payload.uid } });
+    return Link.count({ where: { user: req.payload.user_id } });
   }
 
   @UseMiddleware(isAuth)
@@ -96,7 +96,7 @@ export class LinkResolver {
     try {
       count = await Hit.createQueryBuilder('hit')
         .leftJoinAndSelect('hit.link', 'link')
-        .where('link.user = :id', { id: req.payload.uid })
+        .where('link.user = :id', { id: req.payload.user_id })
         .getCount();
     } catch (error) {
       console.log(error);
@@ -114,7 +114,7 @@ export class LinkResolver {
         .select('MAX(hit.createdAt)', 'latest')
         .leftJoin('hit.link', 'link')
         .groupBy('link.user')
-        .where('link.user = :id', { id: req.payload.uid })
+        .where('link.user = :id', { id: req.payload.user_id })
         .getRawOne<{ latest: Date }>();
     } catch (error) {
       console.log(error);
@@ -138,7 +138,7 @@ export class LinkResolver {
         .addSelect('link.alias', 'alias')
         .leftJoin('hit.link', 'link')
         .groupBy('link.alias')
-        .where('link.user = :id', { id: req.payload.uid })
+        .where('link.user = :id', { id: req.payload.user_id })
         .getRawMany<{ alias: string; hits: number }>();
     } catch (error) {
       console.log(error);
@@ -163,7 +163,7 @@ export class LinkResolver {
         .addSelect('MAX(hit.createdAt)', 'lastHit')
         .leftJoin('link.hits', 'hit')
         .groupBy('link.id')
-        .where('link.user = :id', { id: req.payload.uid });
+        .where('link.user = :id', { id: req.payload.user_id });
     } catch (error) {
       console.log(error);
       throw new Error('Internal server error');
@@ -189,10 +189,11 @@ export class LinkResolver {
     @Ctx() { req }: MyContext
   ): Promise<Link> {
     const { link, alias } = values;
-    let user = await User.findOne({ id: req.payload.uid });
+    console.log(req.payload);
+    let user = await User.findOne({ id: req.payload.user_id });
 
     if (!user) {
-      user = await User.create({ id: req.payload.uid }).save();
+      user = await User.create({ id: req.payload.user_id }).save();
     }
 
     const newLink = await Link.create({
@@ -216,7 +217,7 @@ export class LinkResolver {
         .createQueryBuilder()
         .delete()
         .from(Link)
-        .where('userId = :userId', { userId: req.payload.uid })
+        .where('userId = :userId', { userId: req.payload.user_id })
         .andWhere('id = :id', { id: id })
         .execute();
     } catch (err) {

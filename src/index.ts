@@ -23,11 +23,12 @@ async function main() {
   try {
     await createConnection({
       type: 'postgres',
-      host: process.env.DB_HOST,
-      port: process.env.DB_PORT as unknown as number,
-      database: process.env.DB_NAME,
-      username: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
+      url: process.env.DATABASE_URL,
+      // host: process.env.DB_HOST,
+      // port: process.env.DB_PORT as unknown as number,
+      // database: process.env.DB_NAME,
+      // username: process.env.DB_USERNAME,
+      // password: process.env.DB_PASSWORD,
       synchronize: true,
       logging: true,
       cache: true,
@@ -39,8 +40,8 @@ async function main() {
     app.use(
       cors({
         credentials: true,
-        // origin: `http://localhost:3000`,
-        origin: `https://leanurls.vercel.app`,
+        origin: `http://localhost:3000`,
+        // origin: process.env.HOST_URL,
       })
     );
 
