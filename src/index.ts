@@ -16,8 +16,8 @@ dotenv.config({
   path: path.join(__dirname, '../', `.env.${process.env.NODE_ENV}`),
 });
 
-const PORT = 8000;
-const HOST = `http://localhost:${PORT}`;
+const PORT = process.env.PORT || 8000;
+const HOST = process.env.HOST_URL || `http://localhost:${PORT}`;
 
 async function main() {
   try {
