@@ -24,9 +24,10 @@ async function main() {
     await createConnection({
       type: 'postgres',
       url: process.env.DATABASE_URL,
-      synchronize: true,
-      logging: true,
       cache: true,
+      synchronize: true,
+      logging: process.env.NODE_ENV === 'development',
+      ssl: process.env.NODE_ENV === 'production',
       entities: [Link, User, Hit],
     });
 
