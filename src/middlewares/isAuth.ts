@@ -7,9 +7,9 @@ import { MyContext, Payload } from '../types';
 const checkPayload = (payload: Payload) => {
   return (
     payload.aud === 'leanurls' &&
-    payload.auth_time < new Date().getTime() &&
-    payload.exp! > new Date().getTime() &&
-    payload.iat! < new Date().getTime() &&
+    // payload.auth_time < new Date().getTime() &&
+    // payload.exp! > new Date().getTime() &&
+    // payload.iat! < new Date().getTime() &&
     payload.iss === 'https://securetoken.google.com/leanurls' &&
     payload.sub !== '' &&
     payload.sub === payload.user_id
@@ -31,15 +31,13 @@ const verifyIdToken = async (idToken: string) => {
     payload = jwt.verify(idToken, publicKeys[header.kid], {
       algorithms: ['RS256'],
     }) as Payload;
-
-    // if  (payload.aud === )
   } catch (err) {
     console.error(err);
     throw new AuthenticationError('Expired Token');
   }
 
-  // if (!checkPayload(payload))
-  //   throw new jwt.TokenExpiredError('Expired Token', new Date(payload.exp!));
+  if (!checkPayload(payload))
+    throw new jwt.TokenExpiredError('Expired Token', new Date(payload.exp!));
 
   return payload;
 };

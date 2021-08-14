@@ -6,7 +6,7 @@
   "scripts": {
     "watch": "tsc -w",
     "develop": "nodemon dist/index.js",
-    "start": "node dist/index.js",
+    "start": "tsc && node dist/index.js",
     "test:setup": "node dist/testUtils/setup.js",
     "test": "npm run test:setup && npm t"
   },

@@ -26,6 +26,5 @@
   "include": [
     "./src/**/*.tsx",
     "./src/**/*.ts",
-    "./src/serviceAccount.json"
   ]
 }
