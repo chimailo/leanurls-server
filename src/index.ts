@@ -27,7 +27,7 @@ async function main() {
       cache: true,
       synchronize: true,
       logging: process.env.NODE_ENV === 'development',
-      ssl: { rejectUnauthorized: process.env.NODE_ENV === 'production' },
+      ssl: { rejectUnauthorized: process.env.NODE_ENV === 'development' },
       entities: [Link, User, Hit],
     });
 
